@@ -96,7 +96,7 @@ static const char driver_desc[] = DRIVER_DESC;
 			|USB_CDC_PACKET_TYPE_PROMISCUOUS \
 			|USB_CDC_PACKET_TYPE_DIRECTED)
 
-#define USB_CONNECT_TIMEOUT (3 * CONFIG_SYS_HZ)
+#define USB_CONNECT_TIMEOUT (15 * CONFIG_SYS_HZ)
 
 /*-------------------------------------------------------------------------*/
 
@@ -241,8 +241,16 @@ static inline int BITRATE(struct usb_gadget *g)
  * used with CDC Ethernet, Linux 2.4 hosts will need updates to choose
  * the non-RNDIS configuration.
  */
+#ifdef CONFIG_SPL_BUILD
+
 #define RNDIS_VENDOR_NUM	0x0525	/* NetChip */
 #define RNDIS_PRODUCT_NUM	0xa4a2	/* Ethernet/RNDIS Gadget */
+
+#else
+
+#define RNDIS_VENDOR_NUM    0x0525
+#define RNDIS_PRODUCT_NUM   0xa4a5
+#endif
 
 /*
  * Some systems will want different product identifers published in the

@@ -54,16 +54,16 @@
 #define DEFAULT_LINUX_BOOT_ENV \
 	"loadaddr=0x82000000\0" \
 	"kernel_addr_r=0x82000000\0" \
-	"fdtaddr=0x88000000\0" \
+	"fdtaddr=0x80F80000\0" \
 	"fdt_addr_r=0x88000000\0" \
-	"rdaddr=0x88080000\0" \
+	"rdaddr=0x81000000\0" \
 	"ramdisk_addr_r=0x88080000\0" \
 	"bootm_size=0x10000000\0"
 
 /*
  * Default to a quick boot delay.
  */
-#define CONFIG_BOOTDELAY		1
+#define CONFIG_BOOTDELAY		0
 
 /*
  * DDR information.  If the CONFIG_NR_DRAM_BANKS is not defined,
@@ -127,9 +127,9 @@
  * we are on so we do not need to rely on the command prompt.  We set a
  * console baudrate of 115200 and use the default baud rate table.
  */
-#define CONFIG_SYS_MALLOC_LEN		(16 << 20)
+#define CONFIG_SYS_MALLOC_LEN		(1024 << 10)
 #define CONFIG_SYS_HUSH_PARSER
-#define CONFIG_SYS_PROMPT		"U-Boot# "
+#define CONFIG_SYS_PROMPT		"USB-Flash#"
 #define CONFIG_SYS_CONSOLE_INFO_QUIET
 #define CONFIG_BAUDRATE			115200
 #define CONFIG_ENV_VARS_UBOOT_CONFIG	/* Strongly encouraged */
@@ -140,6 +140,7 @@
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_CMDLINE_EDITING
 #define CONFIG_VERSION_VARIABLE
+#define CONFIG_SUPPORT_RAW_INITRD
 
 /* We set the max number of command args high to avoid HUSH bugs. */
 #define CONFIG_SYS_MAXARGS		64

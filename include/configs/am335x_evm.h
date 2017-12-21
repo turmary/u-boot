@@ -20,6 +20,7 @@
 
 #ifndef CONFIG_SPL_BUILD
 # define CONFIG_FIT
+# define CONFIG_FIT_VERBOSE
 # define CONFIG_TIMESTAMP
 # define CONFIG_LZO
 # ifdef CONFIG_ENABLE_VBOOT
@@ -185,12 +186,11 @@
 #endif
 
 #define CONFIG_BOOTCOMMAND \
-	"run findfdt; " \
-	"run mmcboot;" \
-	"setenv mmcdev 1; " \
-	"setenv bootpart 1:2; " \
-	"run mmcboot;" \
-	"run nandboot;"
+    "setenv ethact usb_ether;" \
+    "setenv serverip 192.168.1.9;" \
+    "setenv ipaddr 192.168.1.3;" \
+    "tftp 0x82000000 itb;" \
+    "run ramargs; bootm;"
 
 /* NS16550 Configuration */
 #define CONFIG_SYS_NS16550_COM1		0x44e09000	/* Base EVM has UART0 */
