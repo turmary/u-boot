@@ -45,11 +45,21 @@ static struct ctrl_dev *cdev = (struct ctrl_dev *)CTRL_DEVICE_BASE;
  */
 static int read_eeprom(struct am335x_baseboard_id *header)
 {
+	static uint32_t written = 0;
+
 	/* Check if baseboard eeprom is available */
 	if (i2c_probe(CONFIG_SYS_I2C_EEPROM_ADDR)) {
 		puts("Could not probe the EEPROM; something fundamentally "
 			"wrong on the I2C bus.\n");
 		return -ENODEV;
+	}
+
+	if (written == 0) {
+		written = 1;
+		printf("Write EEPROM with BeagleBoneBlack ID data\n");
+
+		strcpy((char*)header, "\xAA\x55\x33\xEE""A335BNLTBBG1BBG215050016" "\xFF\xFF\xFF\xFF");
+		i2c_write(CONFIG_SYS_I2C_EEPROM_ADDR, 0, 2, (uchar *)header, 0x20);
 	}
 
 	/* read the eeprom using i2c */
