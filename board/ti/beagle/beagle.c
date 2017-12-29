@@ -56,6 +56,7 @@
 #define BBTOYS_WIFI			0x01000B00
 #define BBTOYS_VGA			0x02000B00
 #define BBTOYS_LCD			0x03000B00
+#define BBTOYS_ULCD			0x04000B00
 #define BCT_BRETTL3			0x01000F00
 #define BCT_BRETTL4			0x02000F00
 #define LSR_COM6L_ADPT			0x01001300
@@ -212,25 +213,25 @@ void get_board_mem_timings(struct board_sdrc_timings *timings)
  *		bus 1 for the availability of an AT24C01B serial EEPROM.
  *		returns the device_vendor field from the EEPROM
  */
-static unsigned int get_expansion_id(void)
+static unsigned int get_expansion_id(int eeprom_address)
 {
 	i2c_set_bus_num(EXPANSION_EEPROM_I2C_BUS);
 
 	/* return BEAGLE_NO_EEPROM if eeprom doesn't respond */
-	if (i2c_probe(EXPANSION_EEPROM_I2C_ADDRESS) == 1) {
+	if (i2c_probe(eeprom_address) == 1) {
 		i2c_set_bus_num(TWL4030_I2C_BUS);
 		return BEAGLE_NO_EEPROM;
 	}
 
 	/* read configuration data */
-	i2c_read(EXPANSION_EEPROM_I2C_ADDRESS, 0, 1, (u8 *)&expansion_config,
+	i2c_read(eeprom_address, 0, 1, (u8 *)&expansion_config,
 		 sizeof(expansion_config));
 
 	/* retry reading configuration data with 16bit addressing */
 	if ((expansion_config.device_vendor == 0xFFFFFF00) ||
 	    (expansion_config.device_vendor == 0xFFFFFFFF)) {
 		printf("EEPROM is blank or 8bit addressing failed: retrying with 16bit:\n");
-		i2c_read(EXPANSION_EEPROM_I2C_ADDRESS, 0, 2, (u8 *)&expansion_config,
+		i2c_read(eeprom_address, 0, 2, (u8 *)&expansion_config,
 			 sizeof(expansion_config));
 	}
 
@@ -342,15 +343,18 @@ int misc_init_r(void)
 	case REVISION_AXBX:
 		printf("Beagle Rev Ax/Bx\n");
 		env_set("beaglerev", "AxBx");
+		env_set("musb", "musb_hdrc.fifo_mode=5");
 		break;
 	case REVISION_CX:
 		printf("Beagle Rev C1/C2/C3\n");
 		env_set("beaglerev", "Cx");
+		env_set("musb", "musb_hdrc.fifo_mode=5");
 		MUX_BEAGLE_C();
 		break;
 	case REVISION_C4:
 		printf("Beagle Rev C4\n");
 		env_set("beaglerev", "C4");
+		env_set("musb", "musb_hdrc.fifo_mode=5");
 		MUX_BEAGLE_C();
 		/* Set VAUX2 to 1.8V for EHCI PHY */
 		twl4030_pmrecv_vsel_cfg(TWL4030_PM_RECEIVER_VAUX2_DEDICATED,
@@ -391,7 +395,7 @@ int misc_init_r(void)
 		generate_fake_mac = true;
 	}
 
-	switch (get_expansion_id()) {
+	switch (get_expansion_id(EXPANSION_EEPROM_I2C_ADDRESS)) {
 	case TINCANTOOLS_ZIPPY:
 		printf("Recognized Tincantools Zippy board (rev %d %s)\n",
 			expansion_config.revision,
@@ -469,6 +473,30 @@ int misc_init_r(void)
 		printf("Unrecognized expansion board: %x\n",
 			expansion_config.device_vendor);
 		env_set("buddy", "unknown");
+	}
+
+	if (expansion_config.content == 1)
+		env_set(expansion_config.env_var, expansion_config.env_setting);
+
+	/* Scan 0x51 as well for loop-thru boards */
+	switch (get_expansion_id(EXPANSION_EEPROM_I2C_ADDRESS + 1)) {
+	case BBTOYS_ULCD:
+		printf("Recognized BeagleBoardToys uLCD-lite board\n");
+		env_set("buddy2", "bbtoys-ulcd");
+		env_set("defaultdisplay", "dvi");
+		env_set("dvimode", "800x480MR-16@60");
+		env_set("lcd1", "i2c mw 40 00 00; i2c mw 40 04 80; i2c mw 40 0d 05");
+		env_set("lcdcmd", "i2c dev 1 ; run lcd1; i2c dev 0");
+		env_set("kmsmode", "video=DVI-D-1:800x480");
+		break;
+	case BEAGLE_NO_EEPROM:
+		printf("No EEPROM on expansion board\n");
+		env_set("buddy2", "none");
+		break;
+	default:
+		printf("Unrecognized expansion board: %x\n",
+			expansion_config.device_vendor);
+		env_set("buddy2", "unknown");
 	}
 
 	if (expansion_config.content == 1)

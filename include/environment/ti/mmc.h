@@ -12,22 +12,45 @@
 #define DEFAULT_MMC_TI_ARGS \
 	"mmcdev=0\0" \
 	"mmcrootfstype=ext4 rootwait\0" \
-	"finduuid=part uuid mmc ${bootpart} uuid\0" \
+	"finduuid=part uuid ${interface} ${bootpart} uuid\0" \
 	"args_mmc=run finduuid;setenv bootargs console=${console} " \
 		"${optargs} " \
-		"root=PARTUUID=${uuid} rw " \
-		"rootfstype=${mmcrootfstype}\0" \
-	"loadbootscript=load mmc ${mmcdev} ${loadaddr} boot.scr\0" \
-	"bootscript=echo Running bootscript from mmc${mmcdev} ...; " \
+		"root=PARTUUID=${uuid} ro " \
+		"rootfstype=${mmcrootfstype} " \
+		"${cmdline}\0" \
+	"args_mmc_old=setenv bootargs console=${console} " \
+		"${optargs} " \
+		"root=${oldroot} ro " \
+		"rootfstype=${mmcrootfstype} " \
+		"${cmdline}\0" \
+	"args_mmc_uuid=setenv bootargs console=${console} " \
+		"${optargs} " \
+		"root=UUID=${uuid} ro " \
+		"rootfstype=${mmcrootfstype} " \
+		"${cmdline}\0" \
+	"args_uenv_root=setenv bootargs console=${console} " \
+		"${optargs} " \
+		"root=${uenv_root} ro " \
+		"rootfstype=${mmcrootfstype} " \
+		"${musb} ${cmdline}\0" \
+	"args_netinstall=setenv bootargs ${netinstall_bootargs} " \
+		"${optargs} " \
+		"${cape_disable} " \
+		"${cape_enable} " \
+		"root=/dev/ram rw " \
+		"${cmdline}\0" \
+	"loadbootscript=load ${interface} ${mmcdev} ${loadaddr} boot.scr\0" \
+	"bootscript=echo Running bootscript from ${interface}${mmcdev} ...; " \
 		"source ${loadaddr}\0" \
 	"bootenvfile=uEnv.txt\0" \
-	"importbootenv=echo Importing environment from mmc${mmcdev} ...; " \
+	"importbootenv=echo Importing environment from ${interface}${mmcdev} ...; " \
 		"env import -t ${loadaddr} ${filesize}\0" \
-	"loadbootenv=fatload mmc ${mmcdev} ${loadaddr} ${bootenvfile}\0" \
-	"loadimage=load ${devtype} ${bootpart} ${loadaddr} ${bootdir}/${bootfile}\0" \
-	"loadfdt=load ${devtype} ${bootpart} ${fdtaddr} ${bootdir}/${fdtfile}\0" \
-	"envboot=mmc dev ${mmcdev}; " \
-		"if mmc rescan; then " \
+	"loadbootenv=fatload ${interface} ${mmcdev} ${loadaddr} ${bootenvfile}\0" \
+	"loadimage=load ${interface} ${bootpart} ${loadaddr} ${bootdir}/${bootfile}\0" \
+	"loadrd=load ${interface} ${bootpart} ${rdaddr} ${bootdir}/${rdfile}; setenv rdsize ${filesize}\0" \
+	"loadfdt=echo loading ${fdtdir}/${fdtfile} ...;  load ${interface} ${bootpart} ${fdtaddr} ${fdtdir}/${fdtfile}\0" \
+	"envboot=${interface} dev ${mmcdev}; " \
+		"if ${interface} rescan; then " \
 			"echo SD/MMC found on device ${mmcdev};" \
 			"if run loadbootscript; then " \
 				"run bootscript;" \

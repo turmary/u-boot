@@ -72,86 +72,40 @@
 #define CONFIG_BOOTCOMMAND \
 	"run findfdt; " \
 	"run distro_bootcmd; " \
-	"mmc dev ${mmcdev}; if mmc rescan; then " \
-		"if run userbutton; then " \
-			"setenv bootenv uEnv.txt;" \
-		"else " \
-			"setenv bootenv user.txt;" \
-		"fi;" \
-		"echo SD/MMC found on device ${mmcdev};" \
-		"if run loadbootenv; then " \
-			"echo Loaded environment from ${bootenv};" \
-			"run importbootenv;" \
-		"fi;" \
-		"if test -n $uenvcmd; then " \
-			"echo Running uenvcmd ...;" \
-			"run uenvcmd;" \
-		"fi;" \
-		"if run loadbootscript; then " \
-			"run bootscript; " \
-		"else " \
-			"if run loadimage; then " \
-				"run mmcboot;" \
-			"fi;" \
-		"fi; " \
-	"fi;" \
-	"run nandboot;" \
-	"setenv bootfile zImage;" \
-	"if run loadimage; then " \
-		"run loadfdt;" \
-		"run mmcbootz; " \
-	"fi; " \
+	"setenv devtype mmc; " \
+	"setenv mmcblk 0; " \
+	"setenv mmcdev 0; " \
+	"run boot;" \
 
 #include <config_distro_bootcmd.h>
 
+#include <environment/ti/mmc.h>
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	"loadaddr=0x80200000\0" \
-	"kernel_addr_r=0x80200000\0" \
-	"rdaddr=0x81000000\0" \
-	"initrd_addr_r=0x81000000\0" \
-	"fdt_high=0xffffffff\0" \
-	"fdtaddr=0x80f80000\0" \
-	"fdt_addr_r=0x80f80000\0" \
-	"usbtty=cdc_acm\0" \
-	"bootfile=uImage\0" \
-	"ramdisk=ramdisk.gz\0" \
-	"bootdir=/boot\0" \
-	"bootpart=0:2\0" \
+	DEFAULT_LINUX_BOOT_ENV \
+	DEFAULT_MMC_TI_ARGS \
 	"console=ttyO2,115200n8\0" \
-	"mpurate=auto\0" \
-	"buddy=none\0" \
-	"optargs=\0" \
-	"camera=none\0" \
-	"vram=12M\0" \
-	"dvimode=640x480MR-16@60\0" \
-	"defaultdisplay=dvi\0" \
-	"mmcdev=0\0" \
-	"mmcroot=/dev/mmcblk0p2 rw\0" \
-	"mmcrootfstype=ext3 rootwait\0" \
-	"nandroot=ubi0:rootfs ubi.mtd=4\0" \
-	"nandrootfstype=ubifs\0" \
-	"ramroot=/dev/ram0 rw ramdisk_size=65536 initrd=0x81000000,64M\0" \
-	"ramrootfstype=ext2\0" \
-	"mmcargs=setenv bootargs console=${console} " \
-		"${optargs} " \
-		"mpurate=${mpurate} " \
-		"buddy=${buddy} "\
-		"camera=${camera} "\
-		"vram=${vram} " \
-		"omapfb.mode=dvi:${dvimode} " \
-		"omapdss.def_disp=${defaultdisplay} " \
-		"root=${mmcroot} " \
-		"rootfstype=${mmcrootfstype}\0" \
-	"nandargs=setenv bootargs console=${console} " \
-		"${optargs} " \
-		"mpurate=${mpurate} " \
-		"buddy=${buddy} "\
-		"camera=${camera} "\
-		"vram=${vram} " \
-		"omapfb.mode=dvi:${dvimode} " \
-		"omapdss.def_disp=${defaultdisplay} " \
-		"root=${nandroot} " \
-		"rootfstype=${nandrootfstype}\0" \
+	"fdtfile=undefined\0" \
+	"bootpart=0:2\0" \
+	"bootdir=/boot\0" \
+	"bootfile=zImage\0" \
+	"usbtty=cdc_acm\0" \
+	"vram=16M\0" \
+	"loadbootscript=load ${devtype} ${mmcdev} ${loadaddr} boot.scr\0" \
+	"bootscript=echo Running bootscript from mmc${mmcdev} ...; " \
+		"source ${loadaddr}\0" \
+	"bootenv=uEnv.txt\0" \
+	"loadbootenv=load ${devtype} ${bootpart} ${loadaddr} ${bootenv}\0" \
+	"importbootenv=echo Importing environment from mmc${mmcdev} ...; " \
+		"env import -t ${loadaddr} ${filesize}\0" \
+	"loadimage=load ${devtype} ${bootpart} ${loadaddr} ${bootdir}/${bootfile}\0" \
+	"loaduimage=load ${devtype} ${mmcdev} ${loadaddr} uImage\0" \
+	"mmcboot=echo Booting from mmc${mmcdev} ...; " \
+		"run args_mmc; " \
+		"bootz ${loadaddr} - ${fdtaddr}\0" \
+	"uimageboot=echo Booting from mmc${mmcdev} ...; " \
+		"run args_mmc; " \
+		"bootm ${loadaddr}\0" \
 	"findfdt=" \
 		"if test $beaglerev = AxBx; then " \
 			"setenv fdtfile omap3-beagle.dtb; fi; " \
@@ -165,48 +119,10 @@
 			"setenv fdtfile omap3-beagle-xm.dtb; fi; " \
 		"if test $fdtfile = undefined; then " \
 			"echo WARNING: Could not determine device tree to use; fi; \0" \
-	"validatefdt=" \
-		"if test $beaglerev = xMAB; then " \
-			"if test ! -e mmc ${bootpart} ${bootdir}/${fdtfile}; then " \
-				"setenv fdtfile omap3-beagle-xm.dtb; " \
-			"fi; " \
-		"fi; \0" \
-	"bootenv=uEnv.txt\0" \
-	"loadbootenv=fatload mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
-	"importbootenv=echo Importing environment from mmc ...; " \
-		"env import -t -r $loadaddr $filesize\0" \
-	"ramargs=setenv bootargs console=${console} " \
-		"${optargs} " \
-		"mpurate=${mpurate} " \
-		"buddy=${buddy} "\
-		"vram=${vram} " \
-		"omapfb.mode=dvi:${dvimode} " \
-		"omapdss.def_disp=${defaultdisplay} " \
-		"root=${ramroot} " \
-		"rootfstype=${ramrootfstype}\0" \
-	"loadramdisk=load mmc ${bootpart} ${rdaddr} ${bootdir}/${ramdisk}\0" \
-	"loadimage=load mmc ${bootpart} ${loadaddr} ${bootdir}/${bootfile}\0" \
-	"loadbootscript=load mmc ${mmcdev} ${loadaddr} boot.scr\0" \
-	"bootscript=echo Running bootscript from mmc${mmcdev} ...; " \
-		"source ${loadaddr}\0" \
-	"loadfdt=run validatefdt; load mmc ${bootpart} ${fdtaddr} ${bootdir}/${fdtfile}\0" \
-	"mmcboot=echo Booting from mmc ...; " \
-		"run mmcargs; " \
-		"bootm ${loadaddr}\0" \
-	"mmcbootz=echo Booting with DT from mmc${mmcdev} ...; " \
-		"run mmcargs; " \
-		"bootz ${loadaddr} - ${fdtaddr}\0" \
-	"nandboot=echo Booting from nand ...; " \
-		"run nandargs; " \
-		"nand read ${loadaddr} 280000 400000; " \
-		"bootm ${loadaddr}\0" \
-	"ramboot=echo Booting from ramdisk ...; " \
-		"run ramargs; " \
-		"bootm ${loadaddr}\0" \
-	"userbutton=if gpio input 173; then run userbutton_xm; " \
-		"else run userbutton_nonxm; fi;\0" \
-	"userbutton_xm=gpio input 4;\0" \
-	"userbutton_nonxm=gpio input 7;\0" \
+	"loadrd=load ${devtype} ${bootpart} ${rdaddr} ${bootdir}/${rdfile}; setenv rdsize ${filesize}\0" \
+	"loadfdt=echo loading ${fdtdir}/${fdtfile} ...; load ${devtype} ${bootpart} ${fdtaddr} ${fdtdir}/${fdtfile}\0" \
+	EEWIKI_BOOT \
+	EEWIKI_UNAME_BOOT \
 	BOOTENV
 
 /*

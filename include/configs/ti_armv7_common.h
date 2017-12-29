@@ -48,7 +48,7 @@
 	"ramdisk_addr_r=0x88080000\0" \
 	"scriptaddr=0x80000000\0" \
 	"pxefile_addr_r=0x80100000\0" \
-	"bootm_size=0x10000000\0" \
+	"bootm_size=0x0a000000\0" \
 	"boot_fdt=try\0"
 
 #define DEFAULT_FIT_TI_ARGS \
@@ -128,6 +128,132 @@
 #define CONFIG_SYS_CBSIZE		1024
 /* Boot Argument Buffer Size */
 #define CONFIG_SYS_BARGSIZE		CONFIG_SYS_CBSIZE
+
+#define EEWIKI_BOOT \
+	"boot=${devtype} dev ${mmcdev}; " \
+		"if ${devtype} rescan; then " \
+			"echo SD/MMC found on device ${mmcdev};" \
+			"setenv bootpart ${mmcdev}:1; " \
+			"echo Checking for: /uEnv.txt ...;" \
+			"if test -e ${devtype} ${bootpart} /uEnv.txt; then " \
+				"load ${devtype} ${bootpart} ${loadaddr} /uEnv.txt;" \
+				"env import -t ${loadaddr} ${filesize};" \
+				"echo Loaded environment from /uEnv.txt;" \
+				"echo Checking if uenvcmd is set ...;" \
+				"if test -n ${uenvcmd}; then " \
+					"echo Running uenvcmd ...;" \
+					"run uenvcmd;" \
+				"fi;" \
+			"fi; " \
+			"echo Checking for: /boot/uEnv.txt ...;" \
+			"for i in 1 2 3 4 5 6 7 ; do " \
+				"setenv mmcpart ${i};" \
+				"setenv bootpart ${mmcdev}:${mmcpart};" \
+				"if test -e ${devtype} ${bootpart} /boot/uEnv.txt; then " \
+					"load ${devtype} ${bootpart} ${loadaddr} /boot/uEnv.txt;" \
+					"env import -t ${loadaddr} ${filesize};" \
+					"echo Loaded environment from /boot/uEnv.txt;" \
+					"if test -n ${dtb}; then " \
+						"setenv fdtfile ${dtb};" \
+						"echo Using: dtb=${fdtfile} ...;" \
+					"fi;" \
+					"echo Checking if uname_r is set in /boot/uEnv.txt...;" \
+					"if test -n ${uname_r}; then " \
+						"setenv oldroot /dev/mmcblk${mmcblk}p${mmcpart};" \
+						"echo Running uname_boot ...;" \
+						"run uname_boot;" \
+					"fi;" \
+				"fi;" \
+			"done;" \
+		"fi;\0" \
+
+#define EEWIKI_UNAME_BOOT \
+	"uname_boot="\
+		"setenv bootdir /boot; " \
+		"setenv bootfile vmlinuz-${uname_r}; " \
+		"if test -e ${devtype} ${bootpart} ${bootdir}/${bootfile}; then " \
+			"echo loading ${bootdir}/${bootfile} ...; "\
+			"run loadimage;" \
+			"setenv fdtdir /boot/dtbs/${uname_r}; " \
+			"if test -e ${devtype} ${bootpart} ${fdtdir}/${fdtfile}; then " \
+				"run loadfdt;" \
+			"else " \
+				"setenv fdtdir /usr/lib/linux-image-${uname_r}; " \
+				"if test -e ${devtype} ${bootpart} ${fdtdir}/${fdtfile}; then " \
+					"run loadfdt;" \
+				"else " \
+					"setenv fdtdir /lib/firmware/${uname_r}/device-tree; " \
+					"if test -e ${devtype} ${bootpart} ${fdtdir}/${fdtfile}; then " \
+						"run loadfdt;" \
+					"else " \
+						"setenv fdtdir /boot/dtb-${uname_r}; " \
+						"if test -e ${devtype} ${bootpart} ${fdtdir}/${fdtfile}; then " \
+							"run loadfdt;" \
+						"else " \
+							"setenv fdtdir /boot/dtbs; " \
+							"if test -e ${devtype} ${bootpart} ${fdtdir}/${fdtfile}; then " \
+								"run loadfdt;" \
+							"else " \
+								"setenv fdtdir /boot/dtb; " \
+								"if test -e ${devtype} ${bootpart} ${fdtdir}/${fdtfile}; then " \
+									"run loadfdt;" \
+								"else " \
+									"setenv fdtdir /boot; " \
+									"if test -e ${devtype} ${bootpart} ${fdtdir}/${fdtfile}; then " \
+										"run loadfdt;" \
+									"else " \
+										"echo; echo unable to find ${fdtfile} ...; echo booting legacy ...;"\
+										"run args_mmc;" \
+										"echo debug: [${bootargs}] ... ;" \
+										"echo debug: [bootz ${loadaddr}] ... ;" \
+										"bootz ${loadaddr}; " \
+									"fi;" \
+								"fi;" \
+							"fi;" \
+						"fi;" \
+					"fi;" \
+				"fi;" \
+			"fi; " \
+			"setenv rdfile initrd.img-${uname_r}; " \
+			"if test -e ${devtype} ${bootpart} ${bootdir}/${rdfile}; then " \
+				"echo loading ${bootdir}/${rdfile} ...; "\
+				"run loadrd;" \
+				"if test -n ${netinstall_enable}; then " \
+					"run args_netinstall; run message;" \
+					"echo debug: [${bootargs}] ... ;" \
+					"echo debug: [bootz ${loadaddr} ${rdaddr}:${rdsize} ${fdtaddr}] ... ;" \
+					"bootz ${loadaddr} ${rdaddr}:${rdsize} ${fdtaddr}; " \
+				"fi;" \
+				"if test -n ${uenv_root}; then " \
+					"run args_uenv_root;" \
+					"echo debug: [${bootargs}] ... ;" \
+					"echo debug: [bootz ${loadaddr} ${rdaddr}:${rdsize} ${fdtaddr}] ... ;" \
+					"bootz ${loadaddr} ${rdaddr}:${rdsize} ${fdtaddr}; " \
+				"fi;" \
+				"if test -n ${uuid}; then " \
+					"run args_mmc_uuid;" \
+					"echo debug: [${bootargs}] ... ;" \
+					"echo debug: [bootz ${loadaddr} ${rdaddr}:${rdsize} ${fdtaddr}] ... ;" \
+					"bootz ${loadaddr} ${rdaddr}:${rdsize} ${fdtaddr}; " \
+				"else " \
+					"run args_mmc_old;" \
+					"echo debug: [${bootargs}] ... ;" \
+					"echo debug: [bootz ${loadaddr} ${rdaddr}:${rdsize} ${fdtaddr}] ... ;" \
+					"bootz ${loadaddr} ${rdaddr}:${rdsize} ${fdtaddr}; " \
+				"fi;" \
+			"else " \
+				"if test -n ${uenv_root}; then " \
+					"run args_uenv_root;" \
+					"echo debug: [${bootargs}] ... ;" \
+					"echo debug: [bootz ${loadaddr} - ${fdtaddr}] ... ;" \
+					"bootz ${loadaddr} - ${fdtaddr}; " \
+				"fi;" \
+				"run args_mmc_old;" \
+				"echo debug: [${bootargs}] ... ;" \
+				"echo debug: [bootz ${loadaddr} - ${fdtaddr}] ... ;" \
+				"bootz ${loadaddr} - ${fdtaddr}; " \
+			"fi;" \
+		"fi;\0" \
 
 /*
  * When we have SPI, NOR or NAND flash we expect to be making use of
@@ -235,7 +361,5 @@
 #else
 #define NETARGS ""
 #endif
-
-#include <config_distro_defaults.h>
 
 #endif	/* __CONFIG_TI_ARMV7_COMMON_H__ */
