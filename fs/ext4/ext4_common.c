@@ -2378,7 +2378,7 @@ int ext4fs_mount(unsigned part_length)
 
 	return 1;
 fail:
-	printf("Failed to mount ext2 filesystem...\n");
+	//printf("Failed to mount ext2 filesystem...\n");
 	free(data);
 	ext4fs_root = NULL;
 

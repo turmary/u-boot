@@ -84,6 +84,8 @@ struct serial_device *default_serial_console(void)
 {
 	if (board_is_icev2())
 		return &eserial4_device;
+	else if (board_is_beaglelogic())
+		return &eserial5_device;
 	else
 		return &eserial1_device;
 }
@@ -264,7 +266,7 @@ const struct dpll_params *get_dpll_ddr_params(void)
 
 	if (board_is_evm_sk())
 		return &dpll_ddr3_303MHz[ind];
-	else if (board_is_bone_lt() || board_is_icev2())
+	else if (board_is_pb() || board_is_bone_lt() || board_is_icev2() || board_is_beaglelogic())
 		return &dpll_ddr3_400MHz[ind];
 	else if (board_is_evm_15_or_later())
 		return &dpll_ddr3_303MHz[ind];
@@ -274,7 +276,7 @@ const struct dpll_params *get_dpll_ddr_params(void)
 
 static u8 bone_not_connected_to_ac_power(void)
 {
-	if (board_is_bone()) {
+	if (board_is_bone() && !board_is_pb()) {
 		uchar pmic_status_reg;
 		if (tps65217_reg_read(TPS65217_STATUS,
 				      &pmic_status_reg))
@@ -295,7 +297,7 @@ const struct dpll_params *get_dpll_mpu_params(void)
 	if (bone_not_connected_to_ac_power())
 		freq = MPUPLL_M_600;
 
-	if (board_is_bone_lt())
+	if (board_is_pb() || board_is_bone_lt() || board_is_beaglelogic())
 		freq = MPUPLL_M_1000;
 
 	switch (freq) {
@@ -324,7 +326,7 @@ static void scale_vcores_bone(int freq)
 	 * Only perform PMIC configurations if board rev > A1
 	 * on Beaglebone White
 	 */
-	if (board_is_bone() && !strncmp(board_ti_get_rev(), "00A1", 4))
+	if (!board_is_pb() && board_is_bone() && !strncmp(board_ti_get_rev(), "00A1", 4))
 		return;
 
 	if (i2c_probe(TPS65217_CHIP_PM))
@@ -341,7 +343,7 @@ static void scale_vcores_bone(int freq)
 	 * Override what we have detected since we know if we have
 	 * a Beaglebone Black it supports 1GHz.
 	 */
-	if (board_is_bone_lt())
+	if (board_is_pb() || board_is_bone_lt() || board_is_beaglelogic())
 		freq = MPUPLL_M_1000;
 
 	switch (freq) {
@@ -387,9 +389,10 @@ static void scale_vcores_bone(int freq)
 
 	/*
 	 * Set LDO3, LDO4 output voltage to 3.3V for Beaglebone.
-	 * Set LDO3 to 1.8V and LDO4 to 3.3V for Beaglebone Black.
+	 * Set LDO3 to 1.8V and LDO4 to 3.3V for Beaglebone Black
+         * and PocketBeagle.
 	 */
-	if (board_is_bone()) {
+	if (board_is_bone() && !board_is_pb()) {
 		if (tps65217_reg_write(TPS65217_PROT_LEVEL_2,
 				       TPS65217_DEFLS1,
 				       TPS65217_LDO_VOLTAGE_OUT_3_3,
@@ -472,7 +475,11 @@ void scale_vcores(void)
 void set_uart_mux_conf(void)
 {
 #if CONFIG_CONS_INDEX == 1
-	enable_uart0_pin_mux();
+	if (board_is_beaglelogic())
+		enable_uart4_pin_mux();
+	else
+		enable_uart0_pin_mux();
+
 #elif CONFIG_CONS_INDEX == 2
 	enable_uart1_pin_mux();
 #elif CONFIG_CONS_INDEX == 3
@@ -542,7 +549,7 @@ void sdram_init(void)
 	if (board_is_evm_sk())
 		config_ddr(303, &ioregs_evmsk, &ddr3_data,
 			   &ddr3_cmd_ctrl_data, &ddr3_emif_reg_data, 0);
-	else if (board_is_bone_lt())
+	else if (board_is_pb() || board_is_bone_lt() || board_is_beaglelogic())
 		config_ddr(400, &ioregs_bonelt,
 			   &ddr3_beagleblack_data,
 			   &ddr3_beagleblack_cmd_ctrl_data,
@@ -612,6 +619,24 @@ static struct clk_synth cdce913_data = {
  */
 int board_init(void)
 {
+	u32 sys_reboot;
+
+	sys_reboot = readl(PRM_RSTST);
+	if (sys_reboot & (1 << 9))
+		puts("Reset Source: IcePick reset has occurred.\n");
+
+	if (sys_reboot & (1 << 5))
+		puts("Reset Source: Global external warm reset has occurred.\n");
+
+	if (sys_reboot & (1 << 4))
+		puts("Reset Source: watchdog reset has occurred.\n");
+
+	if (sys_reboot & (1 << 1))
+		puts("Reset Source: Global warm SW reset has occurred.\n");
+
+	if (sys_reboot & (1 << 0))
+		puts("Reset Source: Power-on reset has occurred.\n");
+
 #if defined(CONFIG_HW_WATCHDOG)
 	hw_watchdog_init();
 #endif
@@ -708,6 +733,8 @@ int board_late_init(void)
 	char *name = NULL;
 
 	if (board_is_bone_lt()) {
+		puts("Board: BeagleBone Black\n");
+		name = "A335BNLT";
 		/* BeagleBoard.org BeagleBone Black Wireless: */
 		if (!strncmp(board_ti_get_rev(), "BWA", 3)) {
 			name = "BBBW";
@@ -720,10 +747,29 @@ int board_late_init(void)
 		if (!strncmp(board_ti_get_rev(), "BLA", 3)) {
 			name = "BBBL";
 		}
+		/* SanCloud BeagleBone Enhanced */
+		if (!strncmp(board_ti_get_rev(), "SE", 2)) {
+			puts("Model: SanCloud BeagleBone Enhanced\n");
+			name = "SBBE";
+		}
+		/* Octavo Systems OSD3358-SM-RED */
+		if (!strncmp(board_ti_get_rev(), "OS00", 4)) {
+			puts("Model: Octavo Systems OSD3358-SM-RED\n");
+			name = "OS00";
+		}
 	}
 
 	if (board_is_bbg1())
 		name = "BBG1";
+
+	if (board_is_pb()) {
+		puts("Model: BeagleBoard.org PocketBeagle\n");
+	}
+
+	if (board_is_beaglelogic()) {
+		puts("Model: BeagleLogic\n");
+	}
+
 	set_board_info_env(name);
 
 	/*
@@ -859,28 +905,33 @@ int board_eth_init(bd_t *bis)
 	(defined(CONFIG_SPL_ETH_SUPPORT) && defined(CONFIG_SPL_BUILD))
 
 #ifdef CONFIG_DRIVER_TI_CPSW
-	if (board_is_bone() || board_is_bone_lt() ||
-	    board_is_idk()) {
-		writel(MII_MODE_ENABLE, &cdev->miisel);
-		cpsw_slaves[0].phy_if = cpsw_slaves[1].phy_if =
-				PHY_INTERFACE_MODE_MII;
-	} else if (board_is_icev2()) {
-		writel(RMII_MODE_ENABLE | RMII_CHIPCKL_ENABLE, &cdev->miisel);
-		cpsw_slaves[0].phy_if = PHY_INTERFACE_MODE_RMII;
-		cpsw_slaves[1].phy_if = PHY_INTERFACE_MODE_RMII;
-		cpsw_slaves[0].phy_addr = 1;
-		cpsw_slaves[1].phy_addr = 3;
-	} else {
-		writel((RGMII_MODE_ENABLE | RGMII_INT_DELAY), &cdev->miisel);
-		cpsw_slaves[0].phy_if = cpsw_slaves[1].phy_if =
-				PHY_INTERFACE_MODE_RGMII;
-	}
+	if (!board_is_pb()) {
+		if (board_is_bone() || (board_is_bone_lt() && !board_is_bone_lt_enhanced() && !board_is_m10a()) ||
+		    board_is_idk() || board_is_beaglelogic()) {
+			puts("eth0: MII MODE\n");
+			writel(MII_MODE_ENABLE, &cdev->miisel);
+			cpsw_slaves[0].phy_if = cpsw_slaves[1].phy_if =
+					PHY_INTERFACE_MODE_MII;
+		} else if (board_is_icev2()) {
+			puts("eth0: icev2: RGMII MODE\n");
+			writel(RMII_MODE_ENABLE | RMII_CHIPCKL_ENABLE, &cdev->miisel);
+			cpsw_slaves[0].phy_if = PHY_INTERFACE_MODE_RMII;
+			cpsw_slaves[1].phy_if = PHY_INTERFACE_MODE_RMII;
+			cpsw_slaves[0].phy_addr = 1;
+			cpsw_slaves[1].phy_addr = 3;
+		} else {
+			puts("eth0: RGMII MODE\n");
+			writel((RGMII_MODE_ENABLE | RGMII_INT_DELAY), &cdev->miisel);
+			cpsw_slaves[0].phy_if = cpsw_slaves[1].phy_if =
+					PHY_INTERFACE_MODE_RGMII;
+		}
 
-	rv = cpsw_register(&cpsw_data);
-	if (rv < 0)
-		printf("Error %d registering CPSW switch\n", rv);
-	else
-		n += rv;
+		rv = cpsw_register(&cpsw_data);
+		if (rv < 0)
+			printf("Error %d registering CPSW switch\n", rv);
+		else
+			n += rv;
+	}
 #endif
 
 	/*
@@ -895,7 +946,7 @@ int board_eth_init(bd_t *bis)
 #define AR8051_DEBUG_RGMII_CLK_DLY_REG	0x5
 #define AR8051_RGMII_TX_CLK_DLY		0x100
 
-	if (board_is_evm_sk() || board_is_gp_evm()) {
+	if (board_is_evm_sk() || board_is_gp_evm() || board_is_bone_lt_enhanced() || board_is_m10a()) {
 		const char *devname;
 		devname = miiphy_get_current_dev();
 
@@ -925,7 +976,14 @@ int board_eth_init(bd_t *bis)
 #ifdef CONFIG_SPL_LOAD_FIT
 int board_fit_config_name_match(const char *name)
 {
+	//FIME: we currently dont use this, yet...
 	if (board_is_gp_evm() && !strcmp(name, "am335x-evm"))
+		return 0;
+	else if (board_is_pb() && !strcmp(name, "am335x-pocketbeagle"))
+		return 0;
+	else if (board_is_beaglelogic() && !strcmp(name, "am335x-beaglelogic"))
+		return 0;
+	else if (board_is_os00() && !strcmp(name, "am335x-boneblack"))
 		return 0;
 	else if (board_is_bone() && !strcmp(name, "am335x-bone"))
 		return 0;
