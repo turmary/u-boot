@@ -16,6 +16,9 @@
 #define CONFIG_SYS_OMAP24_I2C_SPEED	100000
 #define CONFIG_SYS_OMAP24_I2C_SLAVE	1
 
+#define CONFIG_SYS_OMAP24_I2C_SPEED2	100000
+#define CONFIG_SYS_OMAP24_I2C_SLAVE2	1
+
 /*
  * GPMC NAND block.  We support 1 device and the physical address to
  * access CS0 at is 0x8000000.
