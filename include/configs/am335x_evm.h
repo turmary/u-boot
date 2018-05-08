@@ -425,4 +425,8 @@
 #define CLK_SYNTHESIZER_I2C_ADDR 0x65
 #endif
 
+#ifdef CONFIG_CMD_DATE
+#define DAVINCI_RTC_BASE		CONFIG_SYS_BOOTCOUNT_ADDR
+#endif
+
 #endif	/* ! __CONFIG_AM335X_EVM_H */

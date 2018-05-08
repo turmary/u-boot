@@ -31,6 +31,8 @@ struct davinci_rtc {
 	unsigned int	alarmyear;
 	unsigned int	resv2[2];
 	unsigned int	ctrl; /* 0x40 */
+	#define RTC_STATUS_ALARM2_MASK		0x80
+	#define RTC_STATUS_ALARM_MASK		0x40
 	unsigned int	status;
 	unsigned int	irq;
 	unsigned int	complsb;
@@ -42,6 +44,20 @@ struct davinci_rtc {
 	unsigned int	scratch2;
 	unsigned int	kick0r;
 	unsigned int	kick1r; /* 0x70 */
+
+	/* am335x specific */
+	unsigned int	revision;
+	unsigned int	sysconfig;
+	unsigned int	irqwakeen;
+	unsigned int	alarm2second; /* 0x80 */
+	unsigned int	alarm2minute;
+	unsigned int	alarm2hour;
+	unsigned int	alarm2day;
+	unsigned int	alarm2month; /* 0x90 */
+	unsigned int	alarm2year;
+	#define RTC_PMIC_PWR_ENABLE_EN_MASK	0x10000
+	unsigned int	pmic;
+	unsigned int	debounce;
 };
 
 #define RTC_STATE_BUSY	0x01
@@ -49,4 +65,7 @@ struct davinci_rtc {
 
 #define RTC_KICK0R_WE	0x83e70b13
 #define RTC_KICK1R_WE	0x95a4f1e0
+
+int rtcss_pmic_sleep(int off_secs, int on_secs);
+
 #endif

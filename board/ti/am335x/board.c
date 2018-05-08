@@ -23,12 +23,14 @@
 #include <asm/arch/mmc_host_def.h>
 #include <asm/arch/sys_proto.h>
 #include <asm/arch/mem.h>
+#include <asm/arch/mux.h>
 #include <asm/io.h>
 #include <asm/emif.h>
 #include <asm/gpio.h>
 #include <asm/omap_common.h>
 #include <asm/omap_sec_common.h>
 #include <asm/omap_mmc.h>
+#include <asm/davinci_rtc.h>
 #include <i2c.h>
 #include <miiphy.h>
 #include <cpsw.h>
@@ -1159,6 +1161,28 @@ int board_init(void)
 		udelay(2);	/* PHY datasheet states 1uS min. */
 		gpio_set_value(GPIO_PHY_RESET, 1);
 	}
+
+	{
+	static const int PGDLY[] = { 20, 100, 200, 400, /* ms */};
+	uchar v;
+
+	if (tps65217_reg_read(TPS65217_DEFPG, &v)) {
+		puts("tps65217_reg_read DEFPG failure\n");
+		return 0;
+	}
+
+	printf("TPS65217: PGDLY %d ms ->", PGDLY[v & TPS65217_DEFPG_PGDLY_MASK]);
+
+	v = (v & ~TPS65217_DEFPG_PGDLY_MASK) | 0x03;
+	if (tps65217_reg_write(TPS65217_PROT_LEVEL_1,
+			       TPS65217_DEFPG,
+			       v,
+			       TPS65217_DEFPG_PGDLY_MASK))
+		puts("tps65217_reg_write DEFPG failure\n");
+
+	printf(" %d ms\n", PGDLY[v & TPS65217_DEFPG_PGDLY_MASK]);
+	}
+
 #endif
 
 	return 0;
@@ -1382,6 +1406,44 @@ int board_eth_init(bd_t *bis)
 			printf("Error %d registering CPSW switch\n", rv);
 		else
 			n += rv;
+	}
+
+	/*
+	 *  Power-on reset the board if phy don't work
+	 */
+	if (!board_is_pb()
+	   && (board_is_bone()
+	      || (board_is_bone_lt() && !board_is_bone_lt_enhanced() && !board_is_m10a())
+	      || board_is_idk()
+	      || board_is_beaglelogic()
+	      )
+	) {
+
+		struct phy_device *phy;
+		const char *devname;
+		unsigned short v;
+		int r;
+
+		devname = miiphy_get_current_dev();
+		phy = mdio_phydev_for_ethname(devname);
+
+		if (phy != NULL && (phy->phy_id & 0xffff0) == 0x0007c0f0) {
+			/* LAN8710 Special Modes */
+			r = miiphy_read(devname, phy->addr, 18, &v);
+			if (!r && (v & (0x1 << 14))) {
+				printf("PHY: %s not in MII mode\n", phy->drv->name);
+
+				/* for some boards can't sleep, delay is needed here */
+				mdelay(1000);
+
+				/*
+				 * Power On reset the board through a RTC controlled PMIC sleep & wakeup.
+				 * Actually the board/PMIC will off then on
+				 */
+				rtcss_pmic_sleep(2, 2);
+				mdelay(2500);
+			}
+		}
 	}
 #endif
 

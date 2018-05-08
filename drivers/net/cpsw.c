@@ -977,11 +977,24 @@ static int cpsw_phy_init(struct cpsw_priv *priv, struct cpsw_slave *slave)
 {
 	struct phy_device *phydev;
 	u32 supported = PHY_GBIT_FEATURES;
+	int old_addr, i;
 
 	phydev = phy_connect(priv->bus,
 			slave->data->phy_addr,
 			priv->dev,
 			slave->data->phy_if);
+
+	old_addr = slave->data->phy_addr;
+	for (i = 0; !phydev && i < PHY_MAX_ADDR; i++) {
+		if (i == old_addr)
+			continue;
+
+		slave->data->phy_addr = i;
+		phydev = phy_connect(priv->bus,
+				slave->data->phy_addr,
+				priv->dev,
+				slave->data->phy_if);
+	}
 
 	if (!phydev)
 		return -1;
