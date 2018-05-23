@@ -1445,6 +1445,24 @@ int board_eth_init(bd_t *bis)
 			}
 		}
 	}
+
+	{
+		static struct module_pin_mux gpio2_8_pin_mux[] = {
+			{OFFSET(lcd_data2), (MODE(7) | RXACTIVE | PULLUP_EN)},   /* GPIO2_8 */
+			{-1},
+		};
+		int pin = GPIO_TO_PIN(2, 8);
+
+		/* Wait uSD-BOOT press */
+		configure_module_pin_mux(gpio2_8_pin_mux);
+		gpio_request(pin, "boot_btn");
+		gpio_direction_input(pin);
+		mdelay(2000);
+		if (gpio_get_value(pin) == 0) {
+			rtcss_pmic_sleep(2, 2);
+			mdelay(2500);
+		}
+	}
 #endif
 
 	/*
