@@ -142,7 +142,11 @@ int rtcss_pmic_sleep(int off_secs, int on_secs) {
 		/* run RTC counter */
 		writel(0x01, &rtc->ctrl);
 		/* default time */
+#if defined(CONFIG_DM_RTC)
+		davinci_rtc_set(NULL, &default_tm);
+#else
 		rtc_set(&default_tm);
+#endif
 		mdelay(10);
 	}
 
@@ -157,7 +161,11 @@ int rtcss_pmic_sleep(int off_secs, int on_secs) {
 	writel(v, &rtc->status);
 
 	/* set ALARM & ALARM2 time */
+#if defined(CONFIG_DM_RTC)
+	davinci_rtc_get(NULL, rtm);
+#else
 	rtc_get(rtm);
+#endif
 	tm = rtc_mktime(rtm);
 
 	tm += off_secs;
