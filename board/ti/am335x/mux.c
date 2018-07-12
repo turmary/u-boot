@@ -65,7 +65,10 @@ static struct module_pin_mux mmc0_pin_mux[] = {
 	{OFFSET(mmc0_dat0), (MODE(0) | RXACTIVE | PULLUP_EN)},	/* MMC0_DAT0 */
 	{OFFSET(mmc0_clk), (MODE(0) | RXACTIVE | PULLUP_EN)},	/* MMC0_CLK */
 	{OFFSET(mmc0_cmd), (MODE(0) | RXACTIVE | PULLUP_EN)},	/* MMC0_CMD */
+	#if ! defined(_BOARD_CONEXT_GATEWAY) || _BOARD_CONEXT_GATEWAY == 0
+	/* Conext Gateway override by CAN2 */
 	{OFFSET(mcasp0_aclkr), (MODE(4) | RXACTIVE)},		/* MMC0_WP */
+	#endif
 	{OFFSET(spi0_cs1), (MODE(7) | RXACTIVE | PULLUP_EN)},	/* GPIO0_6 */
 	{-1},
 };
@@ -100,7 +103,12 @@ static struct module_pin_mux mmc1_pin_mux[] = {
 	{OFFSET(gpmc_csn1), (MODE(2) | RXACTIVE | PULLUP_EN)},	/* MMC1_CLK */
 	{OFFSET(gpmc_csn2), (MODE(2) | RXACTIVE | PULLUP_EN)},	/* MMC1_CMD */
 	{OFFSET(gpmc_csn0), (MODE(7) | RXACTIVE | PULLUP_EN)},	/* MMC1_WP */
+	#if ! defined(_BOARD_CONEXT_GATEWAY) || _BOARD_CONEXT_GATEWAY == 0
+	/* Conext Gateway override by RS485-2 */
 	{OFFSET(gpmc_advn_ale), (MODE(7) | RXACTIVE | PULLUP_EN)},	/* MMC1_CD */
+	#else
+	{OFFSET(gpmc_a4),   (MODE(7) | RXACTIVE | PULLUP_EN)},  /* eMMC_RSNn */
+	#endif
 	{-1},
 };
 
@@ -180,6 +188,11 @@ static struct module_pin_mux mii1_pin_mux[] = {
 	{OFFSET(mii1_rxd2), MODE(0) | RXACTIVE},	/* MII1_RXD2 */
 	{OFFSET(mii1_rxd1), MODE(0) | RXACTIVE},	/* MII1_RXD1 */
 	{OFFSET(mii1_rxd0), MODE(0) | RXACTIVE},	/* MII1_RXD0 */
+	#if defined(_BOARD_CONEXT_GATEWAY) && _BOARD_CONEXT_GATEWAY != 0
+	{OFFSET(mii1_col),  MODE(0) | RXACTIVE},	/* MII1_COL */
+	{OFFSET(mii1_crs),  MODE(0) | RXACTIVE},	/* MII1_CRS */
+	{OFFSET(gpmc_a3),   MODE(7) | PULLUP_EN},	/* lan8710a reset */
+	#endif
 	{OFFSET(mdio_data), MODE(0) | RXACTIVE | PULLUP_EN}, /* MDIO_DATA */
 	{OFFSET(mdio_clk), MODE(0) | PULLUP_EN},	/* MDIO_CLK */
 	{-1},
@@ -269,6 +282,130 @@ static struct module_pin_mux uart3_icev2_pin_mux[] = {
 	{OFFSET(mii1_rxd2), MODE(1) | PULLUDEN},		/* UART3_TXD */
 	{-1},
 };
+
+#if defined(_BOARD_CONEXT_GATEWAY) && _BOARD_CONEXT_GATEWAY != 0
+static struct module_pin_mux usb1_pin_mux[] = {
+	{OFFSET(gpmc_a4),   (MODE(7) | PULLUP_EN | RXACTIVE) },	/* GPIO1_26, over current detect */
+	{OFFSET(usb1_drvvbus),(MODE(0) | PULLUDDIS) },		/* USB1_DRVVBUS */
+	{-1},
+};
+
+static struct module_pin_mux wl1807_pin_mux[] = {
+	{OFFSET(gpmc_csn0), (MODE(7) | PULLUP_EN | RXACTIVE) }, /* WL1807 shifter enable */
+	{OFFSET(gpmc_ad10), (MODE(7) | PULLDOWN_EN | RXACTIVE) },/* WL1807 WIFI enable */
+	{OFFSET(gpmc_clk),  (MODE(3) | RXACTIVE) },		/* WL1807 WL_SDIO_CLK */
+	{OFFSET(gpmc_csn3), (MODE(3) | RXACTIVE) },		/* WL1807 WL_SDIO_CMD */
+	{OFFSET(gpmc_ad12), (MODE(3) | RXACTIVE) },		/* WL1807 WL_SDIO_D0 */
+	{OFFSET(gpmc_ad13), (MODE(3) | RXACTIVE) },		/* WL1807 WL_SDIO_D1 */
+	{OFFSET(gpmc_ad14), (MODE(3) | RXACTIVE) },		/* WL1807 WL_SDIO_D2 */
+	{OFFSET(gpmc_ad15), (MODE(3) | RXACTIVE) },		/* WL1807 WL_SDIO_D3 */
+	{OFFSET(gpmc_ad10), (MODE(7) | PULLDOWN_EN | RXACTIVE) },/* WL1807 WL_IRQ */
+
+	{OFFSET(lcd_data12),(MODE(7) | PULLDOWN_EN | RXACTIVE) },/* WL1807 BT_EN */
+	{OFFSET(spi0_d0),   (MODE(1) | PULLUDDIS) },		/* uart2_txd, WL1807 BT_HCI_RX */
+	{OFFSET(spi0_sclk), (MODE(1) | PULLUP_EN | RXACTIVE) },	/* uart2_rxd, WL1807 BT_HCI_TX */
+	{OFFSET(lcd_data9), (MODE(6) | PULLUDDIS) },		/* uart2_rtsn, WL1807 BT_HCI_CTS */
+	{OFFSET(lcd_data8), (MODE(6) | PULLUP_EN | RXACTIVE) }, /* uart2_ctsn, WL1807 BT_HCI_RTS */
+	{-1},
+};
+
+static struct module_pin_mux spi1_pin_mux[] = {
+	{OFFSET(mcasp0_aclkx),(MODE(3) | RXACTIVE | PULLUDEN) },	/* SPI1_SCLK */
+	{OFFSET(mcasp0_fsx),  (MODE(3) | RXACTIVE |
+			PULLUDEN | PULLUP_EN)},				/* SPI1_D0 */
+	{OFFSET(mcasp0_axr0), (MODE(3) | RXACTIVE | PULLUDEN) },	/* SPI1_D1 */
+	{OFFSET(rmii1_refclk),(MODE(2) | RXACTIVE |
+			PULLUDEN | PULLUP_EN) },			/* SPI1_CS0, FM25V05 */
+	{OFFSET(ecap0_in_pwm0_out),(MODE(2) | RXACTIVE |
+			PULLUDEN | PULLUP_EN) },			/* SPI1_CS1, CAN2 MCP2515 */
+	{OFFSET(mcasp0_ahclkr),(MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio3_17, MCP2515 nRESET */
+	{OFFSET(mcasp0_aclkr), (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio3_18, MCP2515 nINT */
+	{OFFSET(mcasp0_fsr),   (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio3_19, MCP2515 nRX0BF */
+	{OFFSET(mcasp0_axr1),  (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio3_20, MCP2515 nTX0RTS */
+	{OFFSET(lcd_data11),   (MODE(7) | RXACTIVE | PULLDOWN_EN) },	/* gpio2_17, CAN2 terminal enable */
+	{-1},
+};
+
+static struct module_pin_mux dcan0_pin_mux[] = {
+	{OFFSET(uart1_rtsn), (MODE(2) | RXACTIVE | PULLUDDIS) },	/* dcan0_rx */
+	{OFFSET(uart1_ctsn), (MODE(2) | PULLUP_EN) },			/* dcan0_tx */
+	{OFFSET(lcd_data6),  (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio2_12, CAN0 Standby */
+	{-1},
+};
+
+static struct module_pin_mux dcan1_pin_mux[] = {
+	{OFFSET(uart0_rtsn), (MODE(2) | RXACTIVE | PULLUDDIS) },	/* dcan1_rx */
+	{OFFSET(uart0_ctsn), (MODE(2) | PULLUP_EN) },			/* dcan1_tx */
+	{OFFSET(lcd_data7),  (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio2_13, CAN1 Standby */
+	{-1},
+};
+
+static struct module_pin_mux rs485_1_pin_mux[] = {
+	{OFFSET(gpmc_wen),   (MODE(7) | PULLUP_EN) },			/* gpio2_4, RS485-1 DE-/RE */
+	{OFFSET(lcd_hsync),  (MODE(7) | PULLUP_EN) },			/* gpio2_23,RS485-1 ??? */
+	{OFFSET(uart1_rxd),  (MODE(0) | PULLUP_EN | RXACTIVE) },	/* UART1_RXD */
+	{OFFSET(uart1_txd),  (MODE(0) | PULLUDEN) },			/* UART1_TXD */
+	{-1},
+};
+
+static struct module_pin_mux rs485_2_pin_mux[] = {
+	{OFFSET(gpmc_advn_ale),(MODE(7) | PULLUP_EN) },			/* gpio2_2, RS485-2 DE-/RE */
+	{OFFSET(lcd_ac_bias_en),(MODE(7) | PULLUP_EN) },		/* gpio2_25,RS485-2 ??? */
+	{OFFSET(gpmc_wait0), (MODE(6) | PULLUP_EN | RXACTIVE) },	/* UART4_RXD */
+	{OFFSET(gpmc_wpn),   (MODE(6) | PULLUDEN) },			/* UART4_TXD */
+	{-1},
+};
+
+static struct module_pin_mux digit_in_pin_mux[] = {
+	{OFFSET(gpmc_a9),    (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio1_25, Digital Input */
+	{OFFSET(gpmc_a11),   (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio1_27, Digital Input */
+	{-1},
+};
+
+static struct module_pin_mux pwm1_pin_mux[] = {
+	{OFFSET(gpmc_a2),    (MODE(2) | PULLUDDIS) },			/* ehrpwm1a, buzzer */
+	{-1},
+};
+
+static struct module_pin_mux relay_pin_mux[] = {
+	{OFFSET(gpmc_ad8),   (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio0_22, Relay1 */
+	{OFFSET(gpmc_ad9),   (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio0_23, Relay2 */
+	{-1},
+};
+
+static struct module_pin_mux button_pin_mux[] = {
+	{OFFSET(xdma_event_intr0),(MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio0_19, Reset Button */
+	{OFFSET(emu0),       (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio3_7,  button 3 */
+	{OFFSET(usb0_drvvbus),(MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio0_18, button 4 */
+	{-1},
+};
+
+static struct module_pin_mux jumper_pin_mux[] = {
+	{OFFSET(lcd_data2),  (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio2_8,  Jumper1 SD Boot */
+	{OFFSET(lcd_pclk),   (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio2_24, Jumper2 */
+	{OFFSET(lcd_vsync),  (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio2_22, Jumper3 */
+	{-1},
+};
+
+static struct module_pin_mux led_pin_mux[] = {
+	{OFFSET(gpmc_a5),    (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio1_21, LED USR0 */
+	{OFFSET(gpmc_a6),    (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio1_22, LED USR1 */
+	{OFFSET(gpmc_a7),    (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio1_23, LED USR2 */
+	{OFFSET(gpmc_a8),    (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio1_24, LED USR3 */
+	{OFFSET(gpmc_a0),    (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio1_16, LED USR4 */
+	{OFFSET(gpmc_a1),    (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio1_17, LED USR5 */
+	{OFFSET(lcd_data10), (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio2_16, LED USR6 */
+	{-1},
+};
+
+static struct module_pin_mux misc_pin_mux[] = {
+	{OFFSET(lcd_data5),  (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio2_11, EEPROM Write Protect */
+	{OFFSET(mcasp0_ahclkx),(MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio3_21, DS1339 nINT */
+	{OFFSET(gpmc_be1n),  (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio1_28, A7002CMHN */
+	{-1},
+};
+
+#endif
 
 #if defined(CONFIG_NOR_BOOT)
 void enable_norboot_pin_mux(void)
@@ -418,7 +555,30 @@ void enable_board_pin_mux(void)
 #else
 		configure_module_pin_mux(mmc1_pin_mux);
 #endif
+		#if ! defined(_BOARD_CONEXT_GATEWAY) || _BOARD_CONEXT_GATEWAY == 0
 		configure_module_pin_mux(i2c2_pin_mux);
+		#else
+		/* USB HOST */
+		configure_module_pin_mux(usb1_pin_mux);
+		/* WL1807 WIFI & BT */
+		configure_module_pin_mux(wl1807_pin_mux);
+		/* FRAM & CAN2/MP2515T */
+		configure_module_pin_mux(spi1_pin_mux);
+		configure_module_pin_mux(dcan0_pin_mux);
+		configure_module_pin_mux(dcan1_pin_mux);
+		configure_module_pin_mux(rs485_1_pin_mux);
+		configure_module_pin_mux(rs485_2_pin_mux);
+		configure_module_pin_mux(digit_in_pin_mux);
+		/* BUZZER */
+		configure_module_pin_mux(pwm1_pin_mux);
+		configure_module_pin_mux(relay_pin_mux);
+		configure_module_pin_mux(button_pin_mux);
+		configure_module_pin_mux(jumper_pin_mux);
+		configure_module_pin_mux(led_pin_mux);
+		/* RTC & EEPROM & A7002CMHN */
+		configure_module_pin_mux(i2c1_pin_mux);
+		configure_module_pin_mux(misc_pin_mux);
+		#endif
 	} else if (board_is_icev2()) {
 		configure_module_pin_mux(mmc0_pin_mux);
 		configure_module_pin_mux(gpio0_18_pin_mux);

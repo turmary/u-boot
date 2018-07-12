@@ -429,4 +429,7 @@
 #define DAVINCI_RTC_BASE		CONFIG_SYS_BOOTCOUNT_ADDR
 #endif
 
+/* Schneider Conext Gateway */
+#define _BOARD_CONEXT_GATEWAY		1
+
 #endif	/* ! __CONFIG_AM335X_EVM_H */
