@@ -66,7 +66,7 @@ static struct module_pin_mux mmc0_pin_mux[] = {
 	{OFFSET(mmc0_clk), (MODE(0) | RXACTIVE | PULLUP_EN)},	/* MMC0_CLK */
 	{OFFSET(mmc0_cmd), (MODE(0) | RXACTIVE | PULLUP_EN)},	/* MMC0_CMD */
 	#if ! defined(_BOARD_CONEXT_GATEWAY) || _BOARD_CONEXT_GATEWAY == 0
-	/* Conext Gateway override by CAN2 */
+	/* Conext Gateway:  override by CAN2 */
 	{OFFSET(mcasp0_aclkr), (MODE(4) | RXACTIVE)},		/* MMC0_WP */
 	#endif
 	{OFFSET(spi0_cs1), (MODE(7) | RXACTIVE | PULLUP_EN)},	/* GPIO0_6 */
@@ -104,7 +104,7 @@ static struct module_pin_mux mmc1_pin_mux[] = {
 	{OFFSET(gpmc_csn2), (MODE(2) | RXACTIVE | PULLUP_EN)},	/* MMC1_CMD */
 	{OFFSET(gpmc_csn0), (MODE(7) | RXACTIVE | PULLUP_EN)},	/* MMC1_WP */
 	#if ! defined(_BOARD_CONEXT_GATEWAY) || _BOARD_CONEXT_GATEWAY == 0
-	/* Conext Gateway override by RS485-2 */
+	/* Conext Gateway: override by RS485-2 */
 	{OFFSET(gpmc_advn_ale), (MODE(7) | RXACTIVE | PULLUP_EN)},	/* MMC1_CD */
 	#else
 	{OFFSET(gpmc_a4),   (MODE(7) | RXACTIVE | PULLUP_EN)},  /* eMMC_RSNn */
@@ -121,10 +121,17 @@ static struct module_pin_mux i2c0_pin_mux[] = {
 };
 
 static struct module_pin_mux i2c1_pin_mux[] = {
+	#if defined(_BOARD_CONEXT_GATEWAY) && _BOARD_CONEXT_GATEWAY != 0
+	{OFFSET(spi0_d1),  (MODE(7) | RXACTIVE |
+			PULLUDEN | SLEWCTRL)},			/* gpio0_4 */
+	{OFFSET(spi0_cs0), (MODE(7) | RXACTIVE |
+			PULLUDEN | SLEWCTRL)},			/* gpio0_5 */
+	#else
 	{OFFSET(spi0_d1), (MODE(2) | RXACTIVE |
 			PULLUDEN | SLEWCTRL)},	/* I2C_DATA */
 	{OFFSET(spi0_cs0), (MODE(2) | RXACTIVE |
 			PULLUDEN | SLEWCTRL)},	/* I2C_SCLK */
+	#endif
 	{-1},
 };
 
@@ -292,14 +299,14 @@ static struct module_pin_mux usb1_pin_mux[] = {
 
 static struct module_pin_mux wl1807_pin_mux[] = {
 	{OFFSET(gpmc_csn0), (MODE(7) | PULLUP_EN | RXACTIVE) }, /* WL1807 shifter enable */
-	{OFFSET(gpmc_ad10), (MODE(7) | PULLDOWN_EN | RXACTIVE) },/* WL1807 WIFI enable */
+	{OFFSET(gpmc_ad11), (MODE(7) | PULLDOWN_EN | RXACTIVE) },/* gpio0_27, WL1807 WIFI enable */
 	{OFFSET(gpmc_clk),  (MODE(3) | RXACTIVE) },		/* WL1807 WL_SDIO_CLK */
 	{OFFSET(gpmc_csn3), (MODE(3) | RXACTIVE) },		/* WL1807 WL_SDIO_CMD */
 	{OFFSET(gpmc_ad12), (MODE(3) | RXACTIVE) },		/* WL1807 WL_SDIO_D0 */
 	{OFFSET(gpmc_ad13), (MODE(3) | RXACTIVE) },		/* WL1807 WL_SDIO_D1 */
 	{OFFSET(gpmc_ad14), (MODE(3) | RXACTIVE) },		/* WL1807 WL_SDIO_D2 */
 	{OFFSET(gpmc_ad15), (MODE(3) | RXACTIVE) },		/* WL1807 WL_SDIO_D3 */
-	{OFFSET(gpmc_ad10), (MODE(7) | PULLDOWN_EN | RXACTIVE) },/* WL1807 WL_IRQ */
+	{OFFSET(gpmc_ad10), (MODE(7) | PULLDOWN_EN | RXACTIVE) },/* gpio0_26, WL1807 WL_IRQ */
 
 	{OFFSET(lcd_data12),(MODE(7) | PULLDOWN_EN | RXACTIVE) },/* WL1807 BT_EN */
 	{OFFSET(spi0_d0),   (MODE(1) | PULLUDDIS) },		/* uart2_txd, WL1807 BT_HCI_RX */
