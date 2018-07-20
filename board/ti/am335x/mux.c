@@ -349,6 +349,7 @@ static struct module_pin_mux dcan1_pin_mux[] = {
 };
 
 static struct module_pin_mux rs485_1_pin_mux[] = {
+	{OFFSET(gpmc_oen_ren),(MODE(7)| PULLUDEN | PULLUP_EN) },	/* gpio2_3, RS485-1 terminal enable */
 	{OFFSET(gpmc_wen),   (MODE(7) | PULLUP_EN) },			/* gpio2_4, RS485-1 DE-/RE */
 	{OFFSET(lcd_hsync),  (MODE(7) | PULLUP_EN) },			/* gpio2_23,RS485-1 ??? */
 	{OFFSET(uart1_rxd),  (MODE(0) | PULLUP_EN | RXACTIVE) },	/* UART1_RXD */
@@ -357,6 +358,7 @@ static struct module_pin_mux rs485_1_pin_mux[] = {
 };
 
 static struct module_pin_mux rs485_2_pin_mux[] = {
+	{OFFSET(gpmc_be0n_cle),(MODE(7) | PULLUDEN | PULLUP_EN) },	/* gpio2_5, RS485-2 terminal enable */
 	{OFFSET(gpmc_advn_ale),(MODE(7) | PULLUP_EN) },			/* gpio2_2, RS485-2 DE-/RE */
 	{OFFSET(lcd_ac_bias_en),(MODE(7) | PULLUP_EN) },		/* gpio2_25,RS485-2 ??? */
 	{OFFSET(gpmc_wait0), (MODE(6) | PULLUP_EN | RXACTIVE) },	/* UART4_RXD */
