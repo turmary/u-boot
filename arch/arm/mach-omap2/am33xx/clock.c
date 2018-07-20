@@ -15,6 +15,18 @@
 #include <asm/arch/sys_proto.h>
 #include <asm/io.h>
 
+static void enable_clkout2(void) {
+	struct cm_device_inst *cm_device =
+				(struct cm_device_inst *)CM_DEVICE;
+	/* 0x80
+	 * Bit7-7 0x1 = EN: SYS_CLKOUT2 is enabled
+	 * Bit5-3 0x0 = DIV1: SYS_CLKOUT2 / 1
+	 * Bit2-0 0x0 = SEL0: Select 32KHz Oscillator O/P
+	 */
+	writel(0x80, &cm_device->cm_clkout_ctrl);
+	return;
+}
+
 static void setup_post_dividers(const struct dpll_regs *dpll_regs,
 			 const struct dpll_params *params)
 {
@@ -243,4 +255,5 @@ void prcm_init(void)
 {
 	scale_vcores();
 	setup_dplls();
+	enable_clkout2();
 }

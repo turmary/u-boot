@@ -221,6 +221,7 @@ void enable_basic_clocks(void)
 		&cmper->usb0clkctrl,
 		&cmper->emiffwclkctrl,
 		&cmper->emifclkctrl,
+		&cmper->clk24mhzclkctrl,
 		0
 	};
 

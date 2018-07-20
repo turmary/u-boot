@@ -1287,6 +1287,10 @@ int board_late_init(void)
 	}
 #endif
 #endif
+	#if defined(_BOARD_CONEXT_GATEWAY) && _BOARD_CONEXT_GATEWAY != 0
+	/* enable WiFi Level Shifting */
+	run_command("gpio set 61", 0);
+	#endif
 
 	return 0;
 }

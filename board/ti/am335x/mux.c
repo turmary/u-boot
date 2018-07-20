@@ -300,12 +300,13 @@ static struct module_pin_mux usb1_pin_mux[] = {
 static struct module_pin_mux wl1807_pin_mux[] = {
 	{OFFSET(gpmc_csn0), (MODE(7) | PULLUP_EN | RXACTIVE) }, /* WL1807 shifter enable */
 	{OFFSET(gpmc_ad11), (MODE(7) | PULLDOWN_EN | RXACTIVE) },/* gpio0_27, WL1807 WIFI enable */
-	{OFFSET(gpmc_clk),  (MODE(3) | RXACTIVE) },		/* WL1807 WL_SDIO_CLK */
-	{OFFSET(gpmc_csn3), (MODE(3) | RXACTIVE) },		/* WL1807 WL_SDIO_CMD */
-	{OFFSET(gpmc_ad12), (MODE(3) | RXACTIVE) },		/* WL1807 WL_SDIO_D0 */
-	{OFFSET(gpmc_ad13), (MODE(3) | RXACTIVE) },		/* WL1807 WL_SDIO_D1 */
-	{OFFSET(gpmc_ad14), (MODE(3) | RXACTIVE) },		/* WL1807 WL_SDIO_D2 */
-	{OFFSET(gpmc_ad15), (MODE(3) | RXACTIVE) },		/* WL1807 WL_SDIO_D3 */
+	{OFFSET(xdma_event_intr1),(MODE(3) | RXACTIVE | PULLUP_EN) },   /* clkout2, WIFI EXT_32K */
+	{OFFSET(gpmc_clk),  (MODE(3) | RXACTIVE | PULLUP_EN) },		/* WL1807 WL_SDIO_CLK */
+	{OFFSET(gpmc_csn3), (MODE(3) | RXACTIVE | PULLUP_EN) },		/* WL1807 WL_SDIO_CMD */
+	{OFFSET(gpmc_ad12), (MODE(3) | RXACTIVE | PULLUP_EN) },		/* WL1807 WL_SDIO_D0 */
+	{OFFSET(gpmc_ad13), (MODE(3) | RXACTIVE | PULLUP_EN) },		/* WL1807 WL_SDIO_D1 */
+	{OFFSET(gpmc_ad14), (MODE(3) | RXACTIVE | PULLUP_EN) },		/* WL1807 WL_SDIO_D2 */
+	{OFFSET(gpmc_ad15), (MODE(3) | RXACTIVE | PULLUP_EN) },		/* WL1807 WL_SDIO_D3 */
 	{OFFSET(gpmc_ad10), (MODE(7) | PULLDOWN_EN | RXACTIVE) },/* gpio0_26, WL1807 WL_IRQ */
 
 	{OFFSET(lcd_data12),(MODE(7) | PULLDOWN_EN | RXACTIVE) },/* WL1807 BT_EN */

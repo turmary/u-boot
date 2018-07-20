@@ -185,6 +185,8 @@ struct cm_perpll {
 	unsigned int resv10[8];
 	unsigned int cpswclkstctrl;	/* offset 0x144 */
 	unsigned int lcdcclkstctrl;	/* offset 0x148 */
+	unsigned int clkdiv32kclkctrl;	/* offset 0x14C */
+	unsigned int clk24mhzclkctrl;	/* offset 0x150 */
 };
 
 /* Encapsulating Display pll registers */
@@ -201,6 +203,11 @@ struct cm_dpll {
 	unsigned int clktimer1clk;	/* offset 0x28 */
 	unsigned int resv4[2];
 	unsigned int clklcdcpixelclk;	/* offset 0x34 */
+};
+
+/* Encapsulating cm_device registers */
+struct cm_device_inst {
+	unsigned int cm_clkout_ctrl;
 };
 
 struct prm_device_inst {
