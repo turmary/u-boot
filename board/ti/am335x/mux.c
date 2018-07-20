@@ -364,8 +364,8 @@ static struct module_pin_mux rs485_2_pin_mux[] = {
 };
 
 static struct module_pin_mux digit_in_pin_mux[] = {
-	{OFFSET(gpmc_a9),    (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio1_25, Digital Input */
-	{OFFSET(gpmc_a11),   (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio1_27, Digital Input */
+	{OFFSET(gpmc_a9),    (MODE(7) | RXACTIVE | PULLDOWN_EN) },	/* gpio1_25, Digital Input */
+	{OFFSET(gpmc_a11),   (MODE(7) | RXACTIVE | PULLDOWN_EN) },	/* gpio1_27, Digital Input */
 	{-1},
 };
 
@@ -382,6 +382,7 @@ static struct module_pin_mux relay_pin_mux[] = {
 
 static struct module_pin_mux button_pin_mux[] = {
 	{OFFSET(xdma_event_intr0),(MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio0_19, Reset Button */
+	{OFFSET(emu1),       (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio3_8,  button 2 */
 	{OFFSET(emu0),       (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio3_7,  button 3 */
 	{OFFSET(usb0_drvvbus),(MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio0_18, button 4 */
 	{-1},
