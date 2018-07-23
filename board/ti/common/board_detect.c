@@ -218,6 +218,13 @@ int __maybe_unused ti_i2c_eeprom_am_get(int bus_addr, int dev_addr)
 
 	rc = ti_i2c_eeprom_get(bus_addr, dev_addr, TI_EEPROM_HEADER_MAGIC,
 			       sizeof(am_ep), (uint8_t *)&am_ep);
+	if (rc < 0) {
+		/* Assume it's BeagleBone Green Wireless if eeprom invalid */
+		puts("Invalid eeprom, assume it's BeagleBone Green Wireless\n");
+		memset((char*)&am_ep, '\0', sizeof am_ep);
+		memcpy((char*)&am_ep, "\xAA" "U3" "\xEE" "A335BNLTGW1ABBGW18010001", 28);
+		rc = 0;
+	}
 	if (rc)
 		return rc;
 
