@@ -1450,6 +1450,8 @@ int board_eth_init(bd_t *bis)
 		}
 	}
 
+	/* rtcss_pmic_sleep test code */
+	#if 0
 	{
 		static struct module_pin_mux gpio2_8_pin_mux[] = {
 			{OFFSET(lcd_data2), (MODE(7) | RXACTIVE | PULLUP_EN)},   /* GPIO2_8 */
@@ -1467,6 +1469,7 @@ int board_eth_init(bd_t *bis)
 			mdelay(2500);
 		}
 	}
+	#endif
 #endif
 
 	/*
