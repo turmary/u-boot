@@ -453,7 +453,9 @@ struct ctrl_stat {
 	unsigned int resv2[51];
 	unsigned int secure_emif_sdram_config;	/* offset 0x0110 */
 	unsigned int resv3[319];
-	unsigned int dev_attr;
+	unsigned int dev_attr;		/* am437x field, offset 0x610 */
+	unsigned int resv4[20];
+	unsigned int pwmss_ctrl;	/* offset 0x664 */
 };
 
 /* AM33XX GPIO registers */

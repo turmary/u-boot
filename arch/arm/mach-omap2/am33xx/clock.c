@@ -27,6 +27,22 @@ static void enable_clkout2(void) {
 	return;
 }
 
+static void enable_epwmclks(void) {
+	struct pwmss_regs *pwmss = (struct pwmss_regs *)PWMSS0_BASE;
+	struct ctrl_stat *ctrl = (struct ctrl_stat *)CTRL_BASE;
+
+	/* enable pwmss submodule clock for epwm */
+	setbits_le32(&pwmss->clkconfig, EPWM_CLK_EN);
+
+	/*
+	 * enable timebase clock
+	 * 0x07
+	 * Bit2-0 0x7 pwmss2-0_tbclken
+	 */
+	setbits_le32(&ctrl->pwmss_ctrl, 0x7);
+	return;
+}
+
 static void setup_post_dividers(const struct dpll_regs *dpll_regs,
 			 const struct dpll_params *params)
 {
@@ -256,4 +272,5 @@ void prcm_init(void)
 	scale_vcores();
 	setup_dplls();
 	enable_clkout2();
+	enable_epwmclks();
 }

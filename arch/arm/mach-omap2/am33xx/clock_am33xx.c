@@ -222,6 +222,9 @@ void enable_basic_clocks(void)
 		&cmper->emiffwclkctrl,
 		&cmper->emifclkctrl,
 		&cmper->clk24mhzclkctrl,
+		&cmper->epwmss0clkctrl,
+		&cmper->epwmss1clkctrl,
+		&cmper->epwmss2clkctrl,
 		0
 	};
 
