@@ -373,7 +373,7 @@ static struct module_pin_mux digit_in_pin_mux[] = {
 };
 
 static struct module_pin_mux pwm1_pin_mux[] = {
-	{OFFSET(gpmc_a2),    (MODE(2) | PULLUDDIS) },			/* ehrpwm1a, buzzer */
+	{OFFSET(gpmc_a2),    (MODE(6) | PULLUDDIS) },			/* ehrpwm1a, buzzer */
 	{-1},
 };
 
