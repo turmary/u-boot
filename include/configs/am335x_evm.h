@@ -78,13 +78,21 @@
 #define BOOTENV_DEV_NAME_NAND(devtypeu, devtypel, instance) \
 	#devtypel #instance " "
 
+/*
+ * MMC1 (eMMC) boot firstly
+ * MMC0 (uSD)  boot secondly
+ */
 #define BOOT_TARGET_DEVICES(func) \
-	func(MMC, mmc, 0) \
-	func(LEGACY_MMC, legacy_mmc, 0) \
 	func(MMC, mmc, 1) \
 	func(LEGACY_MMC, legacy_mmc, 1) \
+	func(MMC, mmc, 0) \
+	func(LEGACY_MMC, legacy_mmc, 0)
+/*
+ *  No need
+ *
 	func(PXE, pxe, na) \
 	func(DHCP, dhcp, na)
+*/
 
 #include <config_distro_bootcmd.h>
 
