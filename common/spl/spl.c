@@ -417,6 +417,11 @@ void board_init_r(gd_t *dummy1, ulong dummy2)
 #endif
 	board_boot_order(spl_boot_list);
 
+	{
+	extern int mem_err_chk(void);
+	mem_err_chk();
+	}
+
 	if (boot_from_devices(&spl_image, spl_boot_list,
 			      ARRAY_SIZE(spl_boot_list))) {
 		puts("SPL: failed to boot from all boot devices\n");
