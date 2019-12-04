@@ -1293,6 +1293,12 @@ int board_late_init(void)
 
 	/* reset CC2531 */
 	run_command("gpio clear 23; sleep 0.05; gpio set 23", 0);
+
+	/* debug Jumper */
+	run_command("echo;echo ====== Jumper J2 ======", 0);
+	run_command("gpio input 72", 0);
+	run_command("echo =======================;echo;echo", 0);
+
 	#endif
 
 	return 0;
