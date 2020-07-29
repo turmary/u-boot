@@ -10,6 +10,7 @@
 #include <asm/io.h>
 #include <asm/davinci_rtc.h>
 #include <dm.h>
+#include <power/tps65217.h>
 
 #if defined(CONFIG_CMD_DATE)
 #if defined(CONFIG_DM_RTC)
@@ -192,6 +193,16 @@ int rtcss_pmic_sleep(int off_secs, int on_secs) {
 
 	return 0;
 }
+
+#if defined(CONFIG_CMD_POWEROFF)
+int do_poweroff(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
+	/* Set PWR_EN bit in Status Register */
+	tps65217_reg_write(TPS65217_PROT_LEVEL_NONE,
+			   TPS65217_STATUS, TPS65217_PWR_OFF, TPS65217_PWR_OFF);
+	rtcss_pmic_sleep(2, 1000);
+	return 0;
+}
+#endif
 
 #if defined(CONFIG_DM_RTC)
 static const struct rtc_ops davinci_rtc_ops = {

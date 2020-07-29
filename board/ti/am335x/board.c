@@ -1181,6 +1181,13 @@ int board_init(void)
 		puts("tps65217_reg_write DEFPG failure\n");
 
 	printf(" %d ms\n", PGDLY[v & TPS65217_DEFPG_PGDLY_MASK]);
+
+
+	if (tps65217_reg_read(TPS65217_STATUS, &v)) {
+		puts("tps65217_reg_read STATUS failure\n");
+		return 0;
+	}
+	printf("TPS65217: STATUS 0x%02X\n", v);
 	}
 
 #endif
