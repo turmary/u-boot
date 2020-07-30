@@ -1188,6 +1188,12 @@ int board_init(void)
 		return 0;
 	}
 	printf("TPS65217: STATUS 0x%02X\n", v);
+
+	if (tps65217_reg_read(TPS65217_INTERRUPT, &v)) {
+		puts("tps65217_reg_read INTERRUPT failure\n");
+		return 0;
+	}
+	printf("TPS65217: INTERRUPT 0x%02X (cleared by this reading)\n", v);
 	}
 
 #endif
