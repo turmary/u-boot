@@ -374,7 +374,7 @@ static struct module_pin_mux digit_in_pin_mux[] = {
 
 static struct module_pin_mux pwm1_pin_mux[] = {
 	{OFFSET(gpmc_a2),    (MODE(6) | PULLUDDIS) },			/* ehrpwm1a, buzzer */
-	{OFFSET(lcd_data13), (MODE(7) | RXACTIVE | PULLUP_EN) },	/* gpio0_9,  buzzer_en */
+	{OFFSET(lcd_data13), (MODE(7) | RXACTIVE | PULLUDDIS) },	/* gpio0_9,  buzzer_en, disabled by external pulldown */
 	{-1},
 };
 
