@@ -292,7 +292,7 @@ static struct module_pin_mux uart3_icev2_pin_mux[] = {
 
 #if defined(_BOARD_CONEXT_GATEWAY) && _BOARD_CONEXT_GATEWAY != 0
 static struct module_pin_mux usb1_pin_mux[] = {
-	{OFFSET(gpmc_a4),   (MODE(7) | PULLUP_EN | RXACTIVE) },	/* GPIO1_26, over current detect */
+	{OFFSET(gpmc_a10), (MODE(7) | PULLUP_EN | RXACTIVE) },	/* GPIO1_26, over current detect */
 	{OFFSET(usb1_drvvbus),(MODE(0) | PULLUDDIS) },		/* USB1_DRVVBUS */
 	{-1},
 };
