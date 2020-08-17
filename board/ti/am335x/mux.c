@@ -107,7 +107,7 @@ static struct module_pin_mux mmc1_pin_mux[] = {
 	/* Conext Gateway: override by RS485-2 */
 	{OFFSET(gpmc_advn_ale), (MODE(7) | RXACTIVE | PULLUP_EN)},	/* MMC1_CD */
 	#else
-	{OFFSET(gpmc_a4),   (MODE(7) | RXACTIVE | PULLUP_EN)},  /* eMMC_RSNn */
+	{OFFSET(gpmc_a4), (MODE(7) | RXACTIVE | PULLDOWN_EN)},  /* eMMC_RSNn, reverted */
 	#endif
 	{-1},
 };
