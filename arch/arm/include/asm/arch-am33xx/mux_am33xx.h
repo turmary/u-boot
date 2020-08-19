@@ -161,9 +161,9 @@ struct pad_signals {
 	int emu1;
 	int osc1_in;
 	int osc1_out;
-	int pmic_power_en;
-	int rtc_porz;
 	int rsvd2;
+	int rtc_porz;
+	int pmic_power_en;
 	int ext_wakeup;
 	int enz_kaldo_1p8v;
 	int usb0_dm;
