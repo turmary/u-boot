@@ -165,7 +165,7 @@ static void am33xx_usb_set_phy_power(u8 on, u32 *reg_addr)
 		clrsetbits_le32(reg_addr, CM_PHY_PWRDN | CM_PHY_OTG_PWRDN,
 				OTGVDET_EN | OTGSESSENDEN);
 	} else {
-		clrsetbits_le32(reg_addr, 0, CM_PHY_PWRDN | CM_PHY_OTG_PWRDN);
+		clrsetbits_le32(reg_addr, OTGVDET_EN, CM_PHY_PWRDN | CM_PHY_OTG_PWRDN);
 	}
 }
 
@@ -219,6 +219,9 @@ int arch_misc_init(void)
 #ifdef CONFIG_AM335X_USB0
 	musb_register(&otg0_plat, &otg0_board_data,
 		(void *)USB0_OTG_BASE);
+#else
+	/* decrease leakage current */
+	am33xx_usb_set_phy_power(0, &cdev->usb_ctrl0);
 #endif
 #ifdef CONFIG_AM335X_USB1
 	musb_register(&otg1_plat, &otg1_board_data,
