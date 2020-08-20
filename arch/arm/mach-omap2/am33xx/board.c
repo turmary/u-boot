@@ -156,6 +156,9 @@ static struct ctrl_dev *cdev = (struct ctrl_dev *)CTRL_DEVICE_BASE;
 /* USB 2.0 PHY Control */
 #define CM_PHY_PWRDN			(1 << 0)
 #define CM_PHY_OTG_PWRDN		(1 << 1)
+#define CHGDET_DIS			(1 << 2)
+#define DMPULLDN			(1 << 8)
+#define DPPULLUP			(1 << 9)
 #define OTGVDET_EN			(1 << 19)
 #define OTGSESSENDEN			(1 << 20)
 
@@ -222,11 +225,18 @@ int arch_misc_init(void)
 #else
 	/* decrease leakage current */
 	am33xx_usb_set_phy_power(0, &cdev->usb_ctrl0);
+
+	/* Enable pull on dp & dm */
+	clrsetbits_le32(&cdev->usb_ctrl0, 0, DMPULLDN | DPPULLUP);
 #endif
+	/* Enable charger detection */
+	clrsetbits_le32(&cdev->usb_ctrl0, CHGDET_DIS, 0);
+
 #ifdef CONFIG_AM335X_USB1
 	musb_register(&otg1_plat, &otg1_board_data,
 		(void *)USB1_OTG_BASE);
 #endif
+	clrsetbits_le32(&cdev->usb_ctrl1, CHGDET_DIS, 0);
 	return 0;
 }
 
