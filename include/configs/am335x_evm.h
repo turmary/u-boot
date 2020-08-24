@@ -195,12 +195,22 @@
 				"setenv fdtfile am335x-boneblack.dtb; " \
 			"elif test $board_rev = ME06; then " \
 				"setenv fdtfile am335x-bonegreen.dtb; " \
+			"elif test $board_rev = M10A; then " \
+				"setenv fdtfile am335x-vsc8531bbb.dtb; " \
 			"elif test $board_rev = OS00; then " \
 				"setenv fdtfile am335x-osd3358-sm-red.dtb; " \
 			"else " \
 				"setenv fdtfile am335x-boneblack.dtb; " \
 			"fi; " \
 		"fi; " \
+		"if test $board_name = A335BLNK; then " \
+			"if test -e mmc 0:1 /boot/.eeprom.txt; then " \
+				"load mmc 0:1 ${loadaddr} /boot/.eeprom.txt;" \
+				"env import -t ${loadaddr} ${filesize};" \
+				"echo Loaded environment from /boot/.eeprom.txt;" \
+				"run eeprom_program; " \
+			"fi;" \
+			"setenv fdtfile am335x-bonegreen.dtb; fi; " \
 		"if test $board_name = A335PBGL; then " \
 			"setenv fdtfile am335x-pocketbeagle.dtb; fi; " \
 		"if test $board_name = BBBW; then " \
