@@ -208,6 +208,7 @@
 				"load mmc 0:1 ${loadaddr} /boot/.eeprom.txt;" \
 				"env import -t ${loadaddr} ${filesize};" \
 				"echo Loaded environment from /boot/.eeprom.txt;" \
+				"gpio clear 75;" /* disable eeprom_wp */ \
 				"run eeprom_program; " \
 			"fi;" \
 			"setenv fdtfile am335x-bonegreen.dtb; fi; " \
